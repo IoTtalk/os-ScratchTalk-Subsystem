@@ -4,7 +4,7 @@ var superagent = require("superagent");
 var formidable = require('express-formidable');
 var cors = require('cors');
 
-var Config = require('./config');
+var config = require('./config');
 var app = express();
 
 app.use(express.static('.'));
@@ -16,7 +16,7 @@ app.get('/rc/:device', (req, res) => {
 });
 
 app.post('/ccmapi', (req, res) => {
-    superagent.post(Config.AutoGen_URL)
+    superagent.post(config.AutogenURL)
         .type('form')
         .send(req.fields)
         .end((err, response) => {
