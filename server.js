@@ -7,15 +7,16 @@ var cors = require('cors');
 var config = require('./config');
 var app = express();
 
+app.use('/service/rc', express.static(__dirname + '/rc'));
 app.use(express.static('.'));
 app.use(formidable());
 app.use(cors());
 
-app.get('/rc/:device', (req, res) => {
+app.get('/service/rc/:device', (req, res) => {
   res.sendFile(path.join(__dirname + '/rc/' + req.params.device + '.html'));
 });
 
-app.post('/ccmapi', (req, res) => {
+app.post('/service/ccmapi', (req, res) => {
     superagent.post(config.AutogenURL)
         .type('form')
         .send(req.fields)
