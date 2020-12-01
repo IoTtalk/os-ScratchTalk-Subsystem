@@ -5,18 +5,22 @@ var config = require('../config');
 var router = express.Router();
 
 router.post('/', (req, res) => {
-    superagent.post(config.AutogenURL)
-        .type('form')
-        .send(req.fields)
-        .end((err, response) => {
-            if (err) {
-                console.log(err);
-                res.send(response.text);
-            }else{
-                console.log("["+response.status+"]", req.fields.api_name, response.text);
-                res.send(response.text);
-            }
-        });
+    if(req.session.token || req.fields.api_name == "device.bind"){ // TODO: seperate rc/bind to another path, because device bind does not require authorizaton
+        superagent.post(config.AutogenURL)
+            .type('form')
+            .send(req.fields)
+            .end((err, response) => {
+                if (err) {
+                    console.log(err);
+                    res.send(response.text);
+                }else{
+                    console.log("["+response.status+"]", req.fields.api_name, response.text);
+                    res.send(response.text);
+                }
+            });
+    }else{
+        res.status(400).send("Not Logged In.");
+    }
 });
 
 module.exports = router;
