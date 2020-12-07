@@ -19,7 +19,7 @@ router.post('/', (req, res) => {
                 }
             });
     }else{
-        res.status(400).send("Not Logged In.");
+        res.status(400).send("To gain IoTtalk service permission, please log in.");
     }
 });
 
