@@ -7,10 +7,8 @@ var router = express.Router();
 
 router.get('/login/:oauthProvider', (req, res) => {
     if(!req.session.token){
-        // res.redirect(`${config.googleAuthURI}?client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=email&response_type=code`);
         var redir = { redirect: `${config.googleAuthURI}?client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code` };
     }else{
-        // res.redirect(`${config.serverName}`);
         var redir = { redirect: `${config.serverName}` };
     }
 
@@ -44,7 +42,7 @@ router.post('/status', (req, res) => {
 });
 
 router.post('/userprofile', (req, res) => {
-    if(!req.seesion.token){
+    if(!req.session.token){
         return res.status(400).send("Not Logged In.")
     }else{
         request({
