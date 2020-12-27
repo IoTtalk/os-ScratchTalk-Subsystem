@@ -7,7 +7,7 @@ var router = express.Router();
 
 router.get('/login/:oauthProvider', (req, res) => {
     if(!req.session.token){
-        var redir = { redirect: `${config.googleAuthURI}?client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code` };
+        var redir = { redirect: `${config.googleAuthURI}?prompt=consent&access_type=offline&client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code` };
     }else{
         var redir = { redirect: `${config.serverName}` };
     }
