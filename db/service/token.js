@@ -3,11 +3,13 @@ var db = require("../db");
 var config = require("../../config");
 
 var create = async (params) => {
+    // chek if token exists
     if (await db.Token.findOne({ where: { id_token: params.id_token } })) {
         console.log('[DB]', 'id_token "' + params.id_token + '" is already taken');
         return;
     }
 
+    // create a row in DB
     await db.Token.create(params);
     return;
 }
@@ -20,12 +22,14 @@ var update = async (params) => {
     return ;
 }
 
-var _delete = async (id_token) => {
+var _delete = async (id_token) => { // "delete" is a reserved name, so use "_delete"
     const token = await getByIdToken(id_token);
+    // delete a row
     await token.destroy();
 }
 
 var getByIdToken = async (id_token) => {
+    // query row with id_token
     const token = await db.Token.findOne({ where: { id_token: id_token } });
     if (!token) console.log('[DB]', 'Token not found');
 
@@ -36,6 +40,7 @@ var isTokenExpired = async (id_token) => {
     const token = await getByIdToken(id_token);
     if(!token) return false;
 
+    // check if token has expired
     var pastTime = Math.abs(new Date() - token.updatedAt)/1000;
     if(pastTime > token.expires_in) return token;
     else return false;
@@ -45,7 +50,7 @@ var updateToken = async (id_token) => {
     const token = await isTokenExpired(id_token);
     if(!token) return false;
 
-    request({ // exchange token by code
+    request({ // refresh access token by refresh token
         method: 'POST',
         uri: config.googleTokenURI,
         form: {

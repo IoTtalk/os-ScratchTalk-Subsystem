@@ -10,30 +10,6 @@ var initdb = async () => {
         password: config.dbPassword
     });
 
-    var actions = {
-            createDB: {
-                sql: `CREATE DATABASE IF NOT EXISTS \`${config.db}\``,
-                msg: "Create scratchtalk Database"
-            },
-            switchDB: {
-                sql: `USE \`${config.db}\``,
-                msg: "Use scratchtalk database"
-            },
-            createTokenTable: {
-                sql: "CREATE TABLE IF NOT EXISTS token (id_token VARCHAR(255), access_token VARCHAR(255), refresh_token VARCHAR(255), token_type VARCHAR(255), expires_in INTEGER, update_time TIMESTAMP)",
-                msg: "Create token table"
-            },
-            createUserTable: {
-                sql: "CREATE TABLE IF NOT EXISTS user (id_token VARCHAR(255), name VARCHAR(255), email VARCHAR(255), picture VARCHAR(255))",
-                msg: "Create user table"
-            }
-        }
-
-    // for(var action in actions){
-    //     await dbConn.query(actions[action].sql);
-    //     console.log("[DB]", actions[action].msg);
-    // }
-
     // connect to db
     const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
         host: config.dbHost,

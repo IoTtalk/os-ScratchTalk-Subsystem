@@ -21,7 +21,7 @@ app.use(session({
     cookie: {
         secure: 'auto',
         httpOnly: true,
-        maxAge: 24*60*60*1000 // expires in 1 day 
+        maxAge: 24*60*60*1000 // expires in 1 day
     }
 }));
 
@@ -29,6 +29,6 @@ app.use('/service/rc', require('./routes/rc'));
 app.use('/service/ccmapi', require('./routes/ccmapiHandler'));
 app.use('/service/account', require('./routes/account'));
 
-app.listen(8999, ()=>{
-    console.log("Serving ScratchTalk Subsystem on PORT 8999");
+app.listen(config.serverPort, ()=>{
+    console.log("Serving ScratchTalk Subsystem on PORT", config.serverPort);
 });

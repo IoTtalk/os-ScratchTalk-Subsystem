@@ -40,7 +40,7 @@ router.post('/bind', (req, res) => {
                 }
             });
     }else{
-        res.status(400).send("Device Binding Error");
+        res.status(400).send("[Error] "+req.fields.api_name);
     }
 });
 

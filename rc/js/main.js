@@ -1,5 +1,5 @@
 const Ccmapi_URL = "https://" + window.location.hostname + "/service/ccmapi";
-const Csm_URL = "https://iottalk.scratchtalk.tw/csm";
+const Csm_URL = "https://<iottalk server>/csm";
 
 $(function() {
     var connStatus = false;

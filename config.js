@@ -1,4 +1,5 @@
 exports.serverName = "<Server Domain Name>"
+exports.serverPort = ; //<Server Port>
 exports.AutogenURL = "<AutoGen Address>/autogen/ccm_api";
 
 exports.googleClientID = "<clientID>";
