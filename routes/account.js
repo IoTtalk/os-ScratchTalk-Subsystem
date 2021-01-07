@@ -1,6 +1,8 @@
 var express = require('express');
 var request = require('request');
 var config = require('../config');
+var User = require('../db/service/user');
+var Token = require('../db/service/token');
 
 var router = express.Router();
 
@@ -28,10 +30,44 @@ router.get('/oauth-callback', (req, res) => {
         }
     },
     (error, response, body) => {
-        req.session.token = JSON.parse(body).access_token;
-        console.log('[User logged in]', JSON.parse(body).access_token);
+        var token = JSON.parse(body);
+        token.id_token = (token.id_token).slice(0, 30);
+        req.session.token = token.id_token;
+        console.log('[User logged in]', token.id_token);
 
-        return res.redirect(`${config.serverName}`);
+        // save token in database
+        delete token['scope'];
+        Token.create(token)
+            .then( () => {
+                // refresh token if time expires
+                Token.updateToken(token.id_token);
+
+                // save userinfo in database
+                User.getByIdToken(token.id_token)
+                    .then( userObject => {
+                        if(!userObject){
+                            Token.getByIdToken(token.id_token)
+                            .then( tokenObject => {
+                                request({
+                                    method: 'GET',
+                                    uri: config.userinfoEndpoint+'?alt=json&&access_token='+tokenObject.access_token,
+                                },
+                                (error, response, body) => {
+                                    console.log('[Get User Profile]', body);
+
+                                    User.create({
+                                        id_token: token.id_token,
+                                        name: JSON.parse(body).name,
+                                        email: JSON.parse(body).email,
+                                        picture: JSON.parse(body).picture
+                                    });
+                                    }
+                                );
+                            });
+                        }
+                        return res.redirect(`${config.serverName}`);
+                    });
+            });
         }
     );
 });
@@ -43,18 +79,12 @@ router.post('/status', (req, res) => {
 
 router.post('/userprofile', (req, res) => {
     if(!req.session.token){
-        return res.status(400).send("Not Logged In.")
+        return res.status(401).send("Not Logged In.")
     }else{
-        request({
-            method: 'GET',
-            uri: config.userinfoEndpoint+'?alt=json&&access_token='+req.session.token,
-        },
-        (error, response, body) => {
-            console.log('[Get User Profile]', body);
-
-            return res.json({user: body});
-            }
-        );
+        User.getByIdToken(req.session.token)
+            .then(userObject => {
+                return res.json({user: JSON.stringify(userObject.get())});
+            });
     }
 });
 
@@ -67,7 +97,7 @@ router.get('/logout', (req, res) => {
         var redir = { redirect: `${config.serverName}` };
         return res.json(redir);
     }else{
-        return res.status(400).send("Not Logegd In.");
+        return res.status(400).send("Not Logged In.");
     }
 });
 

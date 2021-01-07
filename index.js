@@ -3,8 +3,11 @@ var path = require('path');
 var formidable = require('express-formidable');
 var session = require('express-session');
 var cors = require('cors');
+var Sequelize = require('sequelize');
+var config = require('./config');
 
 var app = express();
+
 
 app.use('/service/rc', express.static(__dirname + '/rc'));
 app.use(express.static('.'));
@@ -12,7 +15,7 @@ app.use(formidable());
 app.use(cors());
 
 app.use(session({
-    secret: 'scratchtalk',
+    secret: config.secret,
     resave: false,
     saveUninitialized: false,
     cookie: {
