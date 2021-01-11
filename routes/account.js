@@ -1,5 +1,6 @@
 var express = require('express');
 var request = require('request');
+var uuid = require('uuid');
 var config = require('../config');
 var User = require('../db/service/user');
 var Token = require('../db/service/token');
@@ -32,7 +33,7 @@ router.get('/oauth-callback', (req, res) => {
     },
     (error, response, body) => {
         var token = JSON.parse(body);
-        token.id_token = (token.id_token).slice(0, 30);
+        token.id_token = uuid.v4();
         // save token in user session for service authorization
         req.session.token = token.id_token;
         console.log('[User logged in]', token.id_token);

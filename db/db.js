@@ -20,6 +20,8 @@ var initdb = async () => {
             min: 0,
             idle: 30000
         },
+        charset: 'utf8',
+        logging: false
     });
 
     sequelize.authenticate()

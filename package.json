@@ -23,6 +23,7 @@
     "path": "^0.12.7",
     "request": "^2.88.2",
     "sequelize": "^6.3.5",
-    "superagent": "^6.1.0"
+    "superagent": "^6.1.0",
+    "uuid": "^8.3.2"
   }
 }
