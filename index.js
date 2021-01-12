@@ -5,6 +5,7 @@ var session = require('express-session');
 var cors = require('cors');
 var Sequelize = require('sequelize');
 var config = require('./config');
+var logger = require('./utils/logger')("Express");
 
 var app = express();
 
@@ -30,5 +31,5 @@ app.use('/service/ccmapi', require('./routes/ccmapiHandler'));
 app.use('/service/account', require('./routes/account'));
 
 app.listen(config.serverPort, ()=>{
-    console.log("Serving ScratchTalk Subsystem on PORT", config.serverPort);
+    logger.info("Serving ScratchTalk Subsystem on PORT %d", config.serverPort);
 });

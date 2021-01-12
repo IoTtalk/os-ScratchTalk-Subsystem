@@ -1,6 +1,7 @@
 var mysql = require('mysql2/promise');
 var Sequelize = require('sequelize');
 var config = require('../config');
+var logger = require('../utils/logger')("DB");
 
 var initdb = async () => {
     // create db if it doesn't already exist
@@ -26,10 +27,10 @@ var initdb = async () => {
 
     sequelize.authenticate()
         .then(function(err) {
-            console.log('Connection has been established successfully.');
+            logger.info('Connection has been established successfully.');
         })
         .catch(function (err) {
-            console.log('Unable to connect to the database:', err);
+            logger.error('Unable to connect to the database: %s', err);
         });
 
     // init models and add them to the exported db object
