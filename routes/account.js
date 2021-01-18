@@ -1,6 +1,5 @@
 var express = require('express');
 var request = require('request');
-var uuid = require('uuid');
 var config = require('../config');
 var User = require('../db/service/user');
 var Token = require('../db/service/token');
@@ -12,7 +11,7 @@ var router = express.Router();
 router.get('/login/:oauthProvider', (req, res) => {
     // direct to OAuth server if not logged in
     if(!req.session.token){
-        logger.info("A user attempt to log in. Redirect to %s OAuth.", req.params.oauthProvide);
+        logger.info("A user attempt to log in. Redirect to %s OAuth.", req.params.oauthProvider);
         var redir = { redirect: `${config.googleAuthURI}?prompt=consent&access_type=offline&client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code` };
     }else{
         logger.error("Log in error");
@@ -36,7 +35,6 @@ router.get('/oauth-callback', (req, res) => {
     },
     (error, response, body) => {
         var token = JSON.parse(body);
-        token.id_token = uuid.v4();
         // save token in user session for service authorization
         req.session.token = token.id_token;
         logger.info("User %s logged in", token.id_token);

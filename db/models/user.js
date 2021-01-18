@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 
 var userModel = (sequelize) => {
     const attributes = {
-        id_token: { type: DataTypes.STRING, allowNull: true },
+        id_token: { type: DataTypes.TEXT('long'), allowNull: true },
         name: { type: DataTypes.STRING, allowNull: true },
         email: { type: DataTypes.STRING, allowNull: true },
         picture: { type: DataTypes.STRING, allowNull: true }

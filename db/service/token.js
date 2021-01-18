@@ -70,7 +70,7 @@ var updateToken = async (id_token) => {
     (error, response, body) => {
         token.access_token = JSON.parse(body).access_token;
         update(token);
-        logger.info('Token "%s" updated', d_token);
+        logger.info('Token "%s" updated', id_token);
 
         return true;
         }
