@@ -1,5 +1,5 @@
 const Ccmapi_URL = "https://" + window.location.hostname + "/service/ccmapi";
-const Csm_URL = "https://iottalk.scratchtalk.tw/csm";
+const Csm_URL = "https://<iottalk server>/csm";
 
 $(function() {
     var connStatus = false;
@@ -158,7 +158,7 @@ $(function() {
         );
         $.ajax({
             type: 'POST',
-            url: Ccmapi_URL,
+            url: Ccmapi_URL + "/bind",
             processData: false,
             contentType: false,
             data: formData,
@@ -171,7 +171,7 @@ $(function() {
         });
     }
 
-    function unbind_device(p_id, do_id){
+    function unbind_device(p_id, do_id, callback){
         var formData;
 
         formData = new FormData();
@@ -184,12 +184,13 @@ $(function() {
         );
         $.ajax({
             type: 'POST',
-            url: Ccmapi_URL,
+            url: Ccmapi_URL + "/bind",
             processData: false,
             contentType: false,
             data: formData,
             success: function(){
                 console.log("device unbinded");
+                callback();
             },
             error: function(err){
                 console.log("err:",err);
@@ -220,8 +221,7 @@ $(function() {
         if(result){
             setInterval(iotUpdater, interval);
         }
-        unbind_device(p_id, do_id);
-        bind_device(p_id, do_id, d_id);
+        unbind_device(p_id, do_id, bind_device(p_id, do_id, d_id));
     }
 
     dan2.register(Csm_URL, {

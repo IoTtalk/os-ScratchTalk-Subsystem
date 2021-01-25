@@ -16,8 +16,14 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-formidable": "^1.2.0",
+    "express-session": "^1.17.1",
     "multer": "^1.4.2",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.2.5",
     "path": "^0.12.7",
-    "superagent": "^6.1.0"
+    "request": "^2.88.2",
+    "sequelize": "^6.3.5",
+    "superagent": "^6.1.0",
+    "winston": "^3.3.3"
   }
 }
