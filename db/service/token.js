@@ -61,8 +61,8 @@ var updateToken = async (id_token) => {
         method: 'POST',
         uri: config.googleTokenURI,
         form: {
-            'client_id': config.googleClientID,
-            'client_secret': config.googleClientSecret,
+            'client_id': config.authClientID,
+            'client_secret': config.authClientSecret,
             'grant_type': 'refresh_token',
             'refresh_token': token.refresh_token
         }
