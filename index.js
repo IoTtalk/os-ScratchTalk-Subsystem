@@ -28,7 +28,7 @@ app.use(session({
 
 app.use('/service/rc', require('./routes/rc'));
 app.use('/service/ccmapi', require('./routes/ccmapiHandler'));
-app.use('/service/account', require('./routes/account'));
+app.use('/service/auth', require('./routes/auth'));
 
 app.listen(config.serverPort, ()=>{
     logger.info("Serving ScratchTalk Subsystem on PORT %d", config.serverPort);

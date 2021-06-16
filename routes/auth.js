@@ -8,29 +8,27 @@ var logger = require('../utils/logger')("Account");
 var router = express.Router();
 
 
-router.get('/login/:oauthProvider', (req, res) => {
+router.get('/', authRedirect = (req, res) => {
     // direct to OAuth server if not logged in
     if(!req.session.token){
-        logger.info("A user attempt to log in. Redirect to %s OAuth.", req.params.oauthProvider);
-        var redir = { redirect: `${config.googleAuthURI}?prompt=consent&access_type=offline&client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code` };
+        logger.info("A user attempt to log in. Redirect to OAuth server.");
+        return res.redirect(`${config.googleAuthURI}?prompt=consent&access_type=offline&client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code`);
     }else{
         logger.error("Log in error");
-        var redir = { redirect: `${config.serverName}` };
+        return res.redirect(`${config.serverName}`);
     }
-
-    return res.json(redir);
 });
 
-router.get('/oauth-callback', (req, res) => {
+router.get('/callback', authCallback = (req, res) => {
     request({ // exchange token by code
         method: 'POST',
-        uri: config.googleTokenURI,
+        uri: config.authTokenURI,
         form: {
-            'client_id': config.googleClientID,
-            'client_secret': config.googleClientSecret,
+            'client_id': config.authClientID,
+            'client_secret': config.authClientSecret,
             'code': req.query.code,
             'grant_type': 'authorization_code',
-            'redirect_uri': config.redirectURI
+            'redirect_uri': config.authCallbackURI
         }
     },
     (error, response, body) => {
