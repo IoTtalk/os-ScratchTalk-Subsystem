@@ -7,7 +7,7 @@ var logger = require('../utils/logger')("CCMAPI");
 var router = express.Router();
 
 router.post('/', auth(), (req, res) => {
-    superagent.post(config.AutogenURL)
+    superagent.post(config.autogenURL)
         .type('form')
         .send(req.fields)
         .end((err, response) => {

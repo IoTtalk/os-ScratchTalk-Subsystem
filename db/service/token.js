@@ -59,7 +59,7 @@ var updateToken = async (id_token) => {
 
     request({ // refresh access token by refresh token
         method: 'POST',
-        uri: config.googleTokenURI,
+        uri: config.authTokenURI,
         form: {
             'client_id': config.authClientID,
             'client_secret': config.authClientSecret,

@@ -6,6 +6,7 @@ exports.authClientID = "<clientID>";
 exports.authClientSecret = "<clientSecret>";
 exports.authURI = "<OAuth Auth URI>";
 exports.authCallbackURI = "<OAuth callback URI>";
+exports.authTokenURI = "<URI for exchange token>"
 
 exports.secret = "scratchtalk";
 
