@@ -2,6 +2,7 @@ exports.serverName = "<Server Domain Name>"
 exports.serverPort = "<Server Port>";
 exports.autogenURL = "<AutoGen Address>/autogen/ccm_api";
 
+exports.authIssuer = "<OAuth server URL>";
 exports.authClientID = "<clientID>";
 exports.authClientSecret = "<clientSecret>";
 exports.authURI = "<OAuth Auth URI>";
