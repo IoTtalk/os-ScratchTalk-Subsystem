@@ -1,115 +1,133 @@
 var express = require('express');
 var request = require('request');
+var { Issuer, generators } = require('openid-client');
+var gravatar = require('gravatar');
 var config = require('../config');
-var User = require('../db/service/user');
-var Token = require('../db/service/token');
+var db = require("../db/db");
 var logger = require('../utils/logger')("Account");
 
 var router = express.Router();
 
+var iottalkOAuthClient;
+(async () => {
+    const iottalkIssuer = await Issuer.discover(`${config.authIssuer}`);
+    iottalkOAuthClient = new iottalkIssuer.Client({
+        client_id: `${config.authClientID}`,
+        client_secret: `${config.authClientSecret}`,
+        redirect_uris: [`${config.authCallbackURI}`],
+        // id_token_signed_response_alg: "EdDSA",
+        response_types: ['code']
+    })
+})()
+
 
 router.get('/', authRedirect = (req, res) => {
-    // direct to OAuth server if not logged in
-    if(!req.session.token){
-        logger.info("A user attempt to log in. Redirect to OAuth server.");
-        return res.redirect(`${config.googleAuthURI}?prompt=consent&access_type=offline&client_id=${config.googleClientID}&redirect_uri=${config.redirectURI}&scope=openid%20profile%20email&response_type=code`);
-    }else{
-        logger.error("Log in error");
-        return res.redirect(`${config.serverName}`);
-    }
+    // Redirect user-agent to the authorization endpoint
+    var redirectUri = iottalkOAuthClient.authorizationUrl();
+
+    return res.redirect(redirectUri);
 });
 
 router.get('/callback', authCallback = (req, res) => {
-    request({ // exchange token by code
-        method: 'POST',
-        uri: config.authTokenURI,
-        form: {
-            'client_id': config.authClientID,
-            'client_secret': config.authClientSecret,
-            'code': req.query.code,
-            'grant_type': 'authorization_code',
-            'redirect_uri': config.authCallbackURI
-        }
-    },
-    (error, response, body) => {
-        var token = JSON.parse(body);
-        // save token in user session for service authorization
-        req.session.token = token.id_token;
-        logger.info("User %s logged in", token.id_token);
+    var authCode = iottalkOAuthClient.callbackParams(req);
 
-        // save token in database
-        delete token['scope'];
-        Token.create(token)
-            .then( () => {
-                // refresh token if time expires
-                Token.updateToken(token.id_token);
+    iottalkOAuthClient.callback(`${config.authCallbackURI}`, authCode)
+        .then(async function (tokenResponse) {
+            // validate and parse id token 
+            var userInfo = tokenResponse.claims();
 
-                // save userinfo in database if user not exist
-                User.getByIdToken(token.id_token)
-                    .then( userObject => {
-                        if(!userObject){
-                            Token.getByIdToken(token.id_token)
-                            .then( tokenObject => {
-                                request({
-                                    method: 'GET',
-                                    uri: config.userinfoEndpoint+'?alt=json&&access_token='+tokenObject.access_token,
-                                },
-                                (error, response, body) => {
-                                    logger.info("Get user %s profile: %s", token.id_token, JSON.stringify(body));
+            var userRecord;
+            userRecord = await db.User.findOne({ where: { sub: userInfo.sub } });
+            
+            if(!userRecord){
+                // Create a new user record if there does not exist an old one
+                userRecord = {
+                    sub: userInfo.sub,
+                    username: userInfo.preferred_username,
+                    email: userInfo.email
+                }
+                
+                await db.User.create(userRecord);
+                userRecord = await db.User.findOne({ where: { sub: userInfo.sub } });
+            }
+            // Query the refresh token record
+            var refreshTokenRecord;
+            refreshTokenRecord = await db.RefreshToken.findOne({ where: { userId: userRecord.id } });
+            
+            if(!refreshTokenRecord){
+                // Create a new refresh token record if there does not exist an old one
+                refreshTokenRecord = {
+                    token: tokenResponse.refresh_token,
+                    userId: userRecord.id
+                }
+               
+                await db.RefreshToken.create(refreshTokenRecord);
+            }
+            else if (tokenResponse.refresh_token){
+                // If there is a refresh token in a token response, it indicates that
+                // the old refresh token is expired, so we need to update the old refresh
+                // token with a new one.
+                refreshTokenRecord.token = tokenResponse.refresh_token;
+                
+                await db.RefreshToken.update(refreshTokenRecord, { where: { userId: userRecord.id } });
+            }
 
-                                    User.create({
-                                        id_token: token.id_token,
-                                        name: JSON.parse(body).name,
-                                        email: JSON.parse(body).email,
-                                        picture: JSON.parse(body).picture
-                                    });
-                                    }
-                                );
-                            });
-                        }
-                        return res.redirect(`${config.serverName}`);
-                    });
-            });
-        }
-    );
+            // Create a new access token record
+            AccessTokenRecord = {
+                token: tokenResponse.access_token,
+                expiresAt: new Date(new Date().getTime() + tokenResponse.expires_in * 1000),
+                userId: userRecord.id,
+                refreshTokenId: refreshTokenRecord.id
+            }
+            await db.AccessToken.create(AccessTokenRecord);
+            AccessTokenRecord = await db.AccessToken.findOne({ where: { userId: userRecord.id } });
+            
+            // Store the access token ID to session
+            req.session.accessTokenId = AccessTokenRecord.id;
+
+            return res.redirect(`${config.serverName}` );
+        });
 });
 
-router.post('/status', (req, res) => {
+router.get('/sign_out', signOut = async (req, res) => {
+    var accessTokenRecord;
+    accessTokenRecord = await db.AccessToken.findOne({ where: { id: req.session.accessTokenId } });
+
+    if(!accessTokenRecord){
+        return res.redirect(`${config.serverName}`);
+    }
+
+    // Revoke the access token
+    iottalkOAuthClient.revoke(req.session.accessTokenId)
+        .then(async function () {
+            await db.AccessToken.destroy({ where: { id: req.session.accessTokenId } })
+            req.session.destroy();
+            return res.redirect(`${config.serverName}`);
+        });
+});
+
+router.post('/status', async (req, res) => {
     // check if session exist to determine whether the user has logged in or not
-    if(!req.session.token){
+    if(!req.session.accessTokenId){
         return res.json({ session: null });
     }
 
-    // check if token is valid
-    Token.getByIdToken(req.session.token)
-        .then( tokenObject => {
-            if(!tokenObject)return res.json({ session: null });
-            return res.json({ session: tokenObject.id_token });
-        })
+    accessTokenRecord = await db.AccessToken.findOne({ where: { id: req.session.accessTokenId } });
+    userRecord = await db.User.findOne({ where: { id: accessTokenRecord.userId } });
+
+    return res.json({ session: userRecord.id });
 });
 
-router.post('/userprofile', (req, res) => {
-    if(!req.session.token){
+router.post('/userprofile', async (req, res) => {
+    if(!req.session.accessTokenId){
         return res.status(401).send("Not Logged In.")
     }else{
-        // response user profile (name. email, picture, etc.)
-        User.getByIdToken(req.session.token)
-            .then(userObject => {
-                return res.json({user: JSON.stringify(userObject.get())});
-            });
-    }
-});
-
-router.get('/logout', (req, res) => {
-    if(req.session.token){
-        logger.info("User %s logged out. Delete user session.", req.session.token);
-        // destroy user session to log out
-        req.session.destroy();
-
-        var redir = { redirect: `${config.serverName}` };
-        return res.json(redir);
-    }else{
-        return res.status(400).send("Not Logged In.");
+        var accessTokenRecord = await db.AccessToken.findOne({ where: { id: req.session.accessTokenId } });
+        var userRecord = await db.User.findOne({ where: { id: accessTokenRecord.userId } });
+        var userInfo = userRecord.get();
+        userInfo['picture'] = gravatar.url(userInfo.email);
+    
+        return res.json({user: JSON.stringify(userInfo)});
     }
 });
 

@@ -4,7 +4,8 @@ var refreshTokenModel = (sequelize) => {
     const attributes = {
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         token: {
             type: DataTypes.TEXT('long'),
@@ -12,9 +13,9 @@ var refreshTokenModel = (sequelize) => {
         },
     };
 
-    const options = { freezeTableName: true };
+    const options = { freezeTableName: true, initialAutoIncrement: 1 };
 
-    return sequelize.define('refreshToken', attributes, options);
+    return sequelize.define('RefreshToken', attributes, options);
 }
 
 module.exports = refreshTokenModel;

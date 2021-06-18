@@ -4,21 +4,22 @@ var accessTokenModel = (sequelize) => {
     const attributes = {
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         token: {
             type: DataTypes.TEXT('long'),
             allowNull: true
         },
         expiresAt: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DATE,
             allowNull: true
         },
     };
 
-    const options = { freezeTableName: true };
+    const options = { freezeTableName: true, initialAutoIncrement: 1 };
 
-    return sequelize.define('accessToken', attributes, options);
+    return sequelize.define('AccessToken', attributes, options);
 }
 
 module.exports = accessTokenModel;

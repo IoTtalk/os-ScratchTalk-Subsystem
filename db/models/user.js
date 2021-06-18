@@ -4,7 +4,8 @@ var userModel = (sequelize) => {
     const attributes = {
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         sub: {
             type: DataTypes.STRING(255),
@@ -19,15 +20,12 @@ var userModel = (sequelize) => {
             allowNull: true
         },
         isActive: {
-            type: DataTypes.BOOLEAN
-        },
-        picture: {
-            type: DataTypes.STRING,
+            type: DataTypes.BOOLEAN,
             allowNull: true
         }
     };
 
-    const options = { freezeTableName: true };
+    const options = { freezeTableName: true, initialAutoIncrement: 1 };
 
     return sequelize.define('User', attributes, options);
 }
