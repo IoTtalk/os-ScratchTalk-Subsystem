@@ -36,8 +36,8 @@ var initdb = async () => {
     // init models and add them to the exported db object
     var dbModels = require('./models/models')(sequelize);
     db.User = dbModels.user;
-    db.accessToken = dbModels.accessToken;
-    db.refreshToken = dbModels.refreshToken;
+    db.AccessToken = dbModels.accessToken;
+    db.RefreshToken = dbModels.refreshToken;
     
 
     // sync all models with database
