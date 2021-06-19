@@ -27,7 +27,7 @@ app.use(session({
 }));
 
 app.use('/service/rc', require('./routes/rc'));
-app.use('/service/ccmapi', require('./routes/ccmapiHandler'));
+app.use('/service/project', require('./routes/project'));
 app.use('/service/auth', require('./routes/auth'));
 
 app.listen(config.serverPort, ()=>{
