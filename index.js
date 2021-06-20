@@ -3,12 +3,14 @@ var path = require('path');
 var formidable = require('express-formidable');
 var session = require('express-session');
 var cors = require('cors');
+var db = require('./db/db');
 var Sequelize = require('sequelize');
 var config = require('./config');
 var logger = require('./utils/logger')("Express");
 
 var app = express();
 
+db.init();
 
 app.use('/service/rc', express.static(__dirname + '/rc'));
 app.use(express.static('.'));

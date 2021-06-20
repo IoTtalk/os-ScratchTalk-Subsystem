@@ -9,7 +9,8 @@ var userModel = (sequelize) => {
         },
         sub: {
             type: DataTypes.STRING(255),
-            allowNull: true
+            allowNull: true,
+            unique: true
         },
         email: {
             type: DataTypes.STRING(254),

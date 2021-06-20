@@ -3,7 +3,7 @@ var request = require('request');
 var { Issuer, generators } = require('openid-client');
 var gravatar = require('gravatar');
 var config = require('../config');
-var db = require("../db/db");
+var db = require("../db/db").db;
 var logger = require('../utils/logger')("Account");
 
 var router = express.Router();

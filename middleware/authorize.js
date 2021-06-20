@@ -1,4 +1,4 @@
-var db = require("../db/db");
+var db = require("../db/db").db;
 var logger = require('../utils/logger')("Express");
 
 var authorize = () => {
