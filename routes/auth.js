@@ -1,10 +1,9 @@
 var express = require('express');
-var request = require('request');
-var { Issuer, generators } = require('openid-client');
+var { Issuer } = require('openid-client');
 var gravatar = require('gravatar');
 var config = require('../config');
 var db = require("../db/db").db;
-var logger = require('../utils/logger')("Account");
+var logger = require('../utils/logger')("/Auth");
 
 var router = express.Router();
 
@@ -17,7 +16,8 @@ var iottalkOAuthClient;
         redirect_uris: [`${config.authCallbackURI}`],
         // id_token_signed_response_alg: "EdDSA",
         response_types: ['code']
-    })
+    });
+    logger.info("Found OAuth Issuer");
 })()
 
 
@@ -33,8 +33,10 @@ router.get('/callback', authCallback = (req, res) => {
 
     iottalkOAuthClient.callback(`${config.authCallbackURI}`, authCode)
         .then(async function (tokenResponse) {
+            logger.info("Obtain user token from OAuth server: %s", JSON.stringify(tokenResponse));
             // validate and parse id token 
             var userInfo = tokenResponse.claims();
+            logger.info("Obtain user info: %s", JSON.stringify(userInfo));
 
             var userRecord;
             userRecord = await db.User.findOne({ where: { sub: userInfo.sub } });
@@ -49,6 +51,7 @@ router.get('/callback', authCallback = (req, res) => {
                 
                 await db.User.create(userRecord);
                 userRecord = await db.User.findOne({ where: { sub: userInfo.sub } });
+                logger.info("Save user info: %s", JSON.stringify(userRecord.id));
             }
             // Query the refresh token record
             var refreshTokenRecord;
@@ -62,6 +65,7 @@ router.get('/callback', authCallback = (req, res) => {
                 }
                
                 await db.RefreshToken.create(refreshTokenRecord);
+                logger.info("Save refresh token: %s", JSON.stringify(refreshTokenRecord.token));
             }
             else if (tokenResponse.refresh_token){
                 // If there is a refresh token in a token response, it indicates that
@@ -70,6 +74,7 @@ router.get('/callback', authCallback = (req, res) => {
                 refreshTokenRecord.token = tokenResponse.refresh_token;
                 
                 await db.RefreshToken.update(refreshTokenRecord, { where: { userId: userRecord.id } });
+                logger.info("Save refresh token: %s", JSON.stringify(refreshTokenRecord.token));
             }
 
             // Create a new access token record
@@ -81,9 +86,11 @@ router.get('/callback', authCallback = (req, res) => {
             }
             await db.AccessToken.create(AccessTokenRecord);
             AccessTokenRecord = await db.AccessToken.findOne({ where: { userId: userRecord.id } });
-            
+            logger.info("Save access token: %s", JSON.stringify(AccessTokenRecord.id));
+
             // Store the access token ID to session
             req.session.accessTokenId = AccessTokenRecord.id;
+            logger.info("User signed with AccessTokenID: %d", AccessTokenRecord.id);
 
             return res.redirect(`${config.serverName}` );
         });
@@ -101,6 +108,7 @@ router.get('/sign_out', signOut = async (req, res) => {
     iottalkOAuthClient.revoke(req.session.accessTokenId)
         .then(async function () {
             await db.AccessToken.destroy({ where: { id: req.session.accessTokenId } })
+            logger.info("User signed out with AccessTokeniD: %d", req.session.accessTokenId);
             req.session.destroy();
             return res.redirect(`${config.serverName}`);
         });

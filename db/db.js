@@ -46,6 +46,7 @@ var init = async () => {
         password: config.dbPassword
     });
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${config.db}\`;`);
+    logger.warn("Database does not exist, create one: %s", config.db);
 
     // start db
     sequelize.authenticate()
