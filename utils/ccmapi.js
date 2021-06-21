@@ -109,17 +109,18 @@ var get_project = (p_id, api_name='project.get') => {
     */
 }
 
-var delete_project = (p_name, api_name='project.delete') => {
+var delete_project = async (p_id, api_name='project.delete') => {
     payload = JSON.stringify({ p_id: p_id });
 
-    _request(api_name, payload);
+    res = await _request(api_name, payload);
+    return Promise.resolve({ status: res.status, res: res.response });
 }
 
 var on_project = async (p_id, api_name='project.on') => {
     payload = JSON.stringify({ p_id: p_id });
 
     res = await _request(api_name, payload);
-    return Promise.resolve({ status: res.status, status: res.response });
+    return Promise.resolve({ status: res.status, res: res.response });
 }
 
 var off_project = (p_name, api_name='project.off') => {

@@ -1,10 +1,12 @@
 var express = require('express');
+var db = require("../db/db").db;
 var ccmapi = require('../utils/ccmapi');
 var logger = require('../utils/logger')("project");
 var router = express.Router();
 
 router.post('/create', createProject = async (req, res) => {
     var projectConfig = req.fields;
+    var userAccessTokenId = req.session.accessTokenId;
     var iottalkProjectInfo = { 
         p_id: null,
         ido_id: [],
@@ -53,7 +55,24 @@ router.post('/create', createProject = async (req, res) => {
     // set join functions
     await ccmapi.update_na(iottalkProjectInfo.p_id, iottalkProjectInfo.na_id[0], "Join (Updated)");
 
+    // store project to DB
+    AccessTokenRecord = await db.AccessToken.findOne({ where: { id: userAccessTokenId } });
+    projectRecord = {
+        pId: iottalkProjectInfo.p_id,
+        userId: AccessTokenRecord.userId
+    }
+    await db.Project.create(projectRecord);
+
     return res.json(iottalkProjectInfo)
+});
+
+router.post('/delete', deleteProject = async (req, res) => {
+    var projectInfo = req.fields;
+    
+    var result = (await ccmapi.delete_project(projectInfo.p_id)).res;
+    // delete project from DB
+    await db.Project.destroy({ where: { pId: projectInfo.p_id } })
+    return res.send(result)
 });
 
 router.post('/bind_device', bindDevice = async (req, res) => {

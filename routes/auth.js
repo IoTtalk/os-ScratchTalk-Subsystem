@@ -1,5 +1,6 @@
 var express = require('express');
 var { Issuer } = require('openid-client');
+var superagent = require("superagent");
 var gravatar = require('gravatar');
 var config = require('../config');
 var db = require("../db/db").db;
@@ -90,7 +91,7 @@ router.get('/callback', authCallback = (req, res) => {
 
             // Store the access token ID to session
             req.session.accessTokenId = AccessTokenRecord.id;
-            logger.info("User signed with AccessTokenID: %d", AccessTokenRecord.id);
+            logger.info("User signed in with AccessTokenID: %d", AccessTokenRecord.id);
 
             return res.redirect(`${config.serverName}` );
         });
@@ -104,11 +105,27 @@ router.get('/sign_out', signOut = async (req, res) => {
         return res.redirect(`${config.serverName}`);
     }
 
+    // delete iottalk projects
+    projectRecords = await db.Project.findAll({ where: {userId: accessTokenRecord.userId } });
+    if(projectRecords) {
+        for(var projectRecord of projectRecords) {
+            try {
+                await superagent.post(`${config.serverName}`+'/service/project/delete').type('json').send(
+                    {
+                        p_id: projectRecord.pId, 
+                    });
+            } catch (err) {
+                console.error(err);
+            }
+            logger.info("Delete IoTtalk project: %d", projectRecord.pId);        
+        }
+    }
+
     // Revoke the access token
     iottalkOAuthClient.revoke(req.session.accessTokenId)
         .then(async function () {
-            await db.AccessToken.destroy({ where: { id: req.session.accessTokenId } })
-            logger.info("User signed out with AccessTokeniD: %d", req.session.accessTokenId);
+            await db.AccessToken.destroy({ where: { id: req.session.accessTokenId } });
+            logger.info("User signed out with AccessTokenID: %d", req.session.accessTokenId);
             req.session.destroy();
             return res.redirect(`${config.serverName}`);
         });

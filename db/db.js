@@ -35,7 +35,8 @@ const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
 const db = {
     User: require('./models/user')(sequelize),
     AccessToken: require('./models/accessToken')(sequelize),
-    RefreshToken: require('./models/refreshToken')(sequelize)
+    RefreshToken: require('./models/refreshToken')(sequelize),
+    Project: require('./models/project')(sequelize)
 }
 
 var init = async () => {
@@ -61,6 +62,7 @@ var init = async () => {
     db.AccessToken.belongsTo(db.User, { as: 'user' });
     db.RefreshToken.belongsTo(db.User, { as: 'user' });
     db.RefreshToken.hasOne(db.AccessToken, { as: 'refreshToken' });
+    db.Project.belongsTo(db.User, { as: 'user' });
     
     // sync all models with database
     await sequelize.sync({ force: true });
