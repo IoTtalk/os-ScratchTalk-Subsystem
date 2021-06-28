@@ -3,28 +3,53 @@ var Sequelize = require('sequelize');
 var config = require('../config');
 var logger = require('../utils/logger')("DB");
 
-var initdb = async () => {
-    // create db if it doesn't already exist
-    var dbConn = await mysql.createConnection({
+// mysql
+const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
+    host: config.dbHost,
+    port: 3306,
+    dialect: 'mysql',
+    pool: {
+        max: 5,
+        min: 0,
+        idle: 30000
+    },
+    charset: 'utf8',
+    logging: false
+});
+
+// sqlite
+// const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
+//     host: config.dbHost,
+//     port: 3306,
+//     dialect: 'sqlite',
+//     pool: {
+//         max: 5,
+//         min: 0,
+//         idle: 30000
+//     },
+//     storage: './scratchtalk.sqlite',
+//     charset: 'utf8',
+//     logging: false
+// });
+
+const db = {
+    User: require('./models/user')(sequelize),
+    AccessToken: require('./models/accessToken')(sequelize),
+    RefreshToken: require('./models/refreshToken')(sequelize),
+    Project: require('./models/project')(sequelize)
+}
+
+var init = async () => {
+    // create db if it doesn't already exist (for mysql only)
+    const connection = await mysql.createConnection({
         host: config.dbHost,
         user: config.dbUser,
         password: config.dbPassword
     });
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${config.db}\`;`);
+    logger.warn("Database does not exist, create one: %s", config.db);
 
-    // connect to db
-    const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
-        host: config.dbHost,
-        port: 3306,
-        dialect: 'mysql',
-        pool: {
-            max: 5,
-            min: 0,
-            idle: 30000
-        },
-        charset: 'utf8',
-        logging: false
-    });
-
+    // start db
     sequelize.authenticate()
         .then(function(err) {
             logger.info('Connection has been established successfully.');
@@ -33,14 +58,18 @@ var initdb = async () => {
             logger.error('Unable to connect to the database: %s', err);
         });
 
-    // init models and add them to the exported db object
-    db.Token = require('./models/token')(sequelize);
-    db.User = require('./models/user')(sequelize);
-
+    // configure table relationships
+    db.AccessToken.belongsTo(db.User, { as: 'user' });
+    db.RefreshToken.belongsTo(db.User, { as: 'user' });
+    db.RefreshToken.hasOne(db.AccessToken, { as: 'refreshToken' });
+    db.Project.belongsTo(db.User, { as: 'user' });
+    
     // sync all models with database
-    await sequelize.sync();
+    await sequelize.sync({ force: true });
 }
 
-initdb();
 
-module.exports = db = {};
+module.exports = {
+    db: db,
+    init: init
+};

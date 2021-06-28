@@ -2,13 +2,31 @@ const { DataTypes } = require('sequelize');
 
 var userModel = (sequelize) => {
     const attributes = {
-        id_token: { type: DataTypes.TEXT('long'), allowNull: true },
-        name: { type: DataTypes.STRING, allowNull: true },
-        email: { type: DataTypes.STRING, allowNull: true },
-        picture: { type: DataTypes.STRING, allowNull: true }
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        sub: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            unique: true
+        },
+        email: {
+            type: DataTypes.STRING(254),
+            allowNull: true
+        },
+        username: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
+        }
     };
 
-    const options = {};
+    const options = { freezeTableName: true, initialAutoIncrement: 1 };
 
     return sequelize.define('User', attributes, options);
 }

@@ -1,18 +1,15 @@
-var db = require("../db/db");
-var Token = require("../db/service/token");
+var db = require("../db/db").db;
 var logger = require('../utils/logger')("Express");
 
 var authorize = () => {
     return [
         async (req, res, next) => {
             // check if token in session is valid
-            const token = await Token.getByIdToken(req.session.token);
-            if (!token){
+            var accessTokenRecord = await db.AccessToken.findOne({ where: { id: req.session.accessTokenId } });
+            if (!accessTokenRecord){
                 logger.warn("Unauthorized Access");
                 return res.status(401).json({ message: 'Unauthorized' });
             }
-            // update access token if it is expired
-            await Token.updateToken(req.session.token);
             next();
         }
     ];

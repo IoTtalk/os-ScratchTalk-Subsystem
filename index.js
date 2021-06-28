@@ -3,12 +3,14 @@ var path = require('path');
 var formidable = require('express-formidable');
 var session = require('express-session');
 var cors = require('cors');
+var db = require('./db/db');
 var Sequelize = require('sequelize');
 var config = require('./config');
 var logger = require('./utils/logger')("Express");
 
 var app = express();
 
+db.init();
 
 app.use('/service/rc', express.static(__dirname + '/rc'));
 app.use(express.static('.'));
@@ -27,8 +29,8 @@ app.use(session({
 }));
 
 app.use('/service/rc', require('./routes/rc'));
-app.use('/service/ccmapi', require('./routes/ccmapiHandler'));
-app.use('/service/account', require('./routes/account'));
+app.use('/service/project', require('./routes/project'));
+app.use('/service/auth', require('./routes/auth'));
 
 app.listen(config.serverPort, ()=>{
     logger.info("Serving ScratchTalk Subsystem on PORT %d", config.serverPort);

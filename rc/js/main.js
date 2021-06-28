@@ -1,4 +1,4 @@
-const Ccmapi_URL = "https://" + window.location.hostname + "/service/ccmapi";
+const Ccmapi_URL = "https://" + window.location.hostname + "/service/project";
 const Csm_URL = "https://<iottalk server>/csm";
 
 $(function() {
@@ -145,25 +145,16 @@ $(function() {
     }, 1000);
 
     function bind_device(p_id, do_id, d_id){
-        var formData;
-
-        formData = new FormData();
-        formData.append('username', 'scratchdev');
-        formData.append('password', 'scratchdev');
-        formData.append('api_name', 'device.bind');
-        formData.append('payload', JSON.stringify({
-            'p_id': p_id,
-            'do_id': do_id,
-            'd_id':d_id })
-        );
         $.ajax({
             type: 'POST',
-            url: Ccmapi_URL + "/bind",
-            processData: false,
-            contentType: false,
-            data: formData,
-            success: function(){
-                console.log("binding success");
+            url: deviceURL + "/bind_device",
+            data: {
+                'p_id': p_id,
+                'do_id': do_id,
+                'd_id':d_id 
+            },
+            success: function(res){
+                console.log("[Bind Device]: ", res);
             },
             error: function(err){
                 console.log("err:",err);
@@ -172,25 +163,18 @@ $(function() {
     }
 
     function unbind_device(p_id, do_id, callback){
-        var formData;
-
-        formData = new FormData();
-        formData.append('username', 'scratchdev');
-        formData.append('password', 'scratchdev');
-        formData.append('api_name', 'device.unbind');
-        formData.append('payload', JSON.stringify({
-            'p_id': p_id,
-            'do_id': do_id})
-        );
         $.ajax({
             type: 'POST',
-            url: Ccmapi_URL + "/bind",
-            processData: false,
-            contentType: false,
-            data: formData,
-            success: function(){
-                console.log("device unbinded");
-                callback();
+            url: deviceURL + "/unbind_device",
+            data: {
+                'p_id': p_id,
+                'do_id': do_id
+            },
+            success: function(res){
+                console.log("[Unbind Device]: ", res);
+                if(callback){
+                    callback()
+                };
             },
             error: function(err){
                 console.log("err:",err);
@@ -200,9 +184,9 @@ $(function() {
 
     // Register DA to IoTtalk
     var url = new URL(window.location.href);
-    var p_id = url.searchParams.get("p_id");
-    var do_id = url.searchParams.get("do_id");
-    var d_id = _uuid();
+    const p_id = url.searchParams.get("p_id");
+    const do_id = url.searchParams.get("do_id");
+    const d_id = _uuid();
 
     function on_data(odf, data) {
         // receive data from IoTtalk
@@ -224,7 +208,7 @@ $(function() {
         unbind_device(p_id, do_id, bind_device(p_id, do_id, d_id));
     }
 
-    dan2.register(Csm_URL, {
+    dan2.register(csmURL, {
         'id': d_id,
         'name': device_name,
         'on_signal': on_signal,

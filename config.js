@@ -1,13 +1,13 @@
 exports.serverName = "<Server Domain Name>"
-exports.serverPort = ; //<Server Port>
-exports.AutogenURL = "<AutoGen Address>/autogen/ccm_api";
+exports.serverPort = "<Server Port>";
+exports.autogenURL = "<AutoGen Address>/autogen/ccm_api";
 
-exports.googleClientID = "<clientID>";
-exports.googleClientSecret = "<clientSecret>";
-exports.googleAuthURI = "<OAuth Auth URI>";
-exports.redirectURI = "<OAuth callback URI>";
-exports.googleTokenURI = "<Token URI>";
-exports.userinfoEndpoint = "<User Info Endpoint>";
+exports.authIssuer = "<OAuth server URL>";
+exports.authClientID = "<clientID>";
+exports.authClientSecret = "<clientSecret>";
+exports.authURI = "<OAuth Auth URI>";
+exports.authCallbackURI = "<OAuth callback URI>";
+exports.authTokenURI = "<URI for exchange token>"
 
 exports.secret = "scratchtalk";
 
