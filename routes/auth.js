@@ -15,7 +15,7 @@ var iottalkOAuthClient;
         client_id: `${config.authClientID}`,
         client_secret: `${config.authClientSecret}`,
         redirect_uris: [`${config.authCallbackURI}`],
-        // id_token_signed_response_alg: "EdDSA",
+        id_token_signed_response_alg: "EdDSA",
         response_types: ['code']
     });
     logger.info("Found OAuth Issuer");
@@ -91,13 +91,13 @@ router.get('/callback', authCallback = (req, res) => {
 
             // Store the access token ID to session
             req.session.accessTokenId = AccessTokenRecord.id;
-            logger.info("User signed in with AccessTokenID: %d", AccessTokenRecord.id);
+            logger.info("User logged in with AccessTokenID: %d", AccessTokenRecord.id);
 
             return res.redirect(`${config.serverName}` );
         });
 });
 
-router.get('/sign_out', signOut = async (req, res) => {
+router.get('/logout', logout = async (req, res) => {
     var accessTokenRecord;
     accessTokenRecord = await db.AccessToken.findOne({ where: { id: req.session.accessTokenId } });
 
@@ -125,7 +125,7 @@ router.get('/sign_out', signOut = async (req, res) => {
     iottalkOAuthClient.revoke(req.session.accessTokenId)
         .then(async function () {
             await db.AccessToken.destroy({ where: { id: req.session.accessTokenId } });
-            logger.info("User signed out with AccessTokenID: %d", req.session.accessTokenId);
+            logger.info("User logged out with AccessTokenID: %d", req.session.accessTokenId);
             req.session.destroy();
             return res.redirect(`${config.serverName}`);
         });
