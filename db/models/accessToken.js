@@ -18,7 +18,7 @@ var accessTokenModel = (sequelize) => {
     };
 
     const options = { freezeTableName: true, initialAutoIncrement: 1 };
-
+      
     return sequelize.define('AccessToken', attributes, options);
 }
 

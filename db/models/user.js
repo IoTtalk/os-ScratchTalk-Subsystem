@@ -19,10 +19,6 @@ var userModel = (sequelize) => {
         username: {
             type: DataTypes.STRING(100),
             allowNull: true
-        },
-        isActive: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true
         }
     };
 

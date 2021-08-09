@@ -59,13 +59,13 @@ var init = async () => {
         });
 
     // configure table relationships
-    db.AccessToken.belongsTo(db.User, { as: 'user' });
-    db.RefreshToken.belongsTo(db.User, { as: 'user' });
-    db.RefreshToken.hasOne(db.AccessToken, { as: 'refreshToken' });
-    db.Project.belongsTo(db.User, { as: 'user' });
+    db.User.hasMany(db.AccessToken, { as: 'userAccessToken', foreignKey: 'userId' });
+    db.User.hasOne(db.RefreshToken, { as: 'userRefreshToken', foreignKey: 'userId' });
+    db.User.hasMany(db.Project, { as: 'userProject', foreignKey: 'userId' });
+    db.RefreshToken.hasMany(db.AccessToken, { as: 'refreshToken', foreignKey: 'refreshTokenId' });
     
     // sync all models with database
-    await sequelize.sync({ force: true });
+    await sequelize.sync();
 }
 
 
