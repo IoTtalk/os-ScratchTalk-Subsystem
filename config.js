@@ -15,3 +15,6 @@ exports.dbHost = "localhost";
 exports.dbUser = "root";
 exports.dbPassword = "root";
 exports.db = "scratchtalk";
+
+exports.iottalkUser = "scratchtalk";
+exports.iottalkPassword = "scratchtalk";
