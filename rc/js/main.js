@@ -1,5 +1,5 @@
-const Ccmapi_URL = "https://" + window.location.hostname + "/service/project";
-const Csm_URL = "https://<iottalk server>/csm";
+const deviceURL = "https://" + window.location.hostname + "/service/project";
+const csmURL = "https://<iottalk address>/csm";
 
 $(function() {
     var connStatus = false;
