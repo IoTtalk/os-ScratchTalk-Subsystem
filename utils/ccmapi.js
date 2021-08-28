@@ -156,7 +156,7 @@ var get_na = async (p_id, na_id, api_name='networkapplication.get') => {
     return Promise.resolve({ status: res.status, na_info: res.response });
 }
 
-var update_na = async(p_id, na_id, na_name, api_name='networkapplication.update') => {
+var custom_update_na = async(p_id, na_id, na_name, api_name='networkapplication.update') => {
     get_na(p_id, na_id).then(async function(res){
         payload = gen_payload(na_id, na_name, p_id, res.na_info);
 
@@ -236,7 +236,7 @@ module.exports = {
     get_do: get_do,
     create_na: create_na,
     get_na: get_na,
-    update_na: update_na,
+    custom_update_na: custom_update_na,
     get_device: get_device,
     bind_device: bind_device,
     unbind_device: unbind_device
