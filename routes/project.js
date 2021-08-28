@@ -17,6 +17,8 @@ router.post('/create', createProject = async (req, res) => {
     // create a iottalk project
     iottalkProjectInfo.p_id = parseInt((await ccmapi.create_project("scratch-"+ new Date().getTime())).p_id);
 
+    // TO DO: create DM, DF if they do not exist
+    
     // create IDOs
     if(projectConfig.idos) {
         for(var ido of projectConfig.idos) {
@@ -53,7 +55,13 @@ router.post('/create', createProject = async (req, res) => {
     await ccmapi.on_project(iottalkProjectInfo.p_id);
 
     // set join functions
-    await ccmapi.update_na(iottalkProjectInfo.p_id, iottalkProjectInfo.na_id[0], "Join (Updated)");
+    var index = 0;
+    for(var join of projectConfig.joins){
+        if(join.idfs.includes('Orientation')){
+            await ccmapi.custom_update_na(iottalkProjectInfo.p_id, iottalkProjectInfo.na_id[index], "Join (Updated)");
+        }
+        index++;
+    }
 
     // store project to DB
     AccessTokenRecord = await db.AccessToken.findOne({ where: { id: userAccessTokenId } });
