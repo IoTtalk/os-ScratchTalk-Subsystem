@@ -1,7 +1,8 @@
 const deviceURL = "https://" + window.location.hostname + "/service/project";
-const csmURL = "https://<iottalk address>/csm";
+const csmURL = "https://<iottalk address>";
 
 $(function() {
+    // console.log("enter main.js");
     var connStatus = false;
 
     // Keep screen active
@@ -117,10 +118,10 @@ $(function() {
     requestAnimationFrame(domUpdater);
 
     function iotUpdater() {
-        dan2.push('Acceleration', [acc.x, acc.y, acc.z]);
-        dan2.push('Gyroscope', [gyro.x, gyro.y, gyro.z]);
-        dan2.push('Orientation', [orient.x, orient.y, orient.z]);
-        dan2.push('Microphone', [(meter.volume*100).toFixed(2)]);
+        // dan.push('Acceleration', [acc.x, acc.y, acc.z]);
+        // dan.push('Gyroscope', [gyro.x, gyro.y, gyro.z]);
+        dan.push('Orientation-I', [orient.x, orient.y, orient.z]);
+        dan.push('Microphone-I', [(meter.volume*100).toFixed(2)]);
     }
 
     function on_signal(cmd, param) {
@@ -145,13 +146,14 @@ $(function() {
     }, 1000);
 
     function bind_device(p_id, do_id, d_id){
+        console.log("bind url =",deviceURL + "/bind_device")
         $.ajax({
             type: 'POST',
             url: deviceURL + "/bind_device",
             data: {
-                'p_id': p_id,
-                'do_id': do_id,
-                'd_id':d_id 
+                p_id: p_id,
+                do_id: do_id,
+                d_id:d_id,
             },
             success: function(res){
                 console.log("[Bind Device]: ", res);
@@ -160,9 +162,10 @@ $(function() {
                 console.log("err:",err);
             },
         });
-    }
+    };
 
     function unbind_device(p_id, do_id, callback){
+        
         $.ajax({
             type: 'POST',
             url: deviceURL + "/unbind_device",
@@ -184,9 +187,12 @@ $(function() {
 
     // Register DA to IoTtalk
     var url = new URL(window.location.href);
-    const p_id = url.searchParams.get("p_id");
-    const do_id = url.searchParams.get("do_id");
+    const p_id = parseInt(url.searchParams.get("p_id"));
+    const do_id = parseInt(url.searchParams.get("do_id"));
     const d_id = _uuid();
+
+    console.log('pid = ', p_id);
+    console.log('do_id = ', do_id);
 
     function on_data(odf, data) {
         // receive data from IoTtalk
@@ -205,27 +211,28 @@ $(function() {
         if(result){
             setInterval(iotUpdater, interval);
         }
-        unbind_device(p_id, do_id, bind_device(p_id, do_id, d_id));
+        bind_device(p_id, do_id, d_id);
     }
 
-    dan2.register(csmURL, {
-        'id': d_id,
-        'name': device_name,
-        'on_signal': on_signal,
-        'on_data': on_data,
-        'idf_list': [
-            ['Acceleration', ['g', 'g', 'g']],
-            ['Gyroscope', ['g', 'g', 'g']],
-            ['Orientation', ['g', 'g', 'g']],
-            ['Microphone', ['g']],
-        ],
+    
+    profile = {
+        'd_name': device_name +'.1',
+        'dm_name': device_name,
+        'idf_list': ['Orientation-I','Microphone-I'],
         'odf_list': [],
-        'profile': {
-            'model': 'Smartphone',
-        },
-        'accept_protos': ['mqtt'],
-        }, init_callback);
+    };
 
+    function ida_init(){
+        console.log(profile.d_name);
+    }
+    var ida = {
+        'ida_init': ida_init,
+    };
+    // console.log("ready to register");
+    dai(profile,d_id,ida,init_callback);
+    // console.log("end of register");
+
+    // bind_device(p_id,do_id,d_id);
 
     function pageUnloaded() {
         dan2.deregister();
