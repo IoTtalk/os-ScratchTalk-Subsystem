@@ -10,8 +10,6 @@ var csmapi = (function () {
     }
 
     function register (mac_addr, profile, callback) {
-        console.log('url= ', ENDPOINT + '/' + mac_addr );
-        console.log("profile = " , profile);
         $.ajax({
             type: 'POST',
             url: ENDPOINT +'/'+ mac_addr,

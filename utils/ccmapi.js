@@ -6,22 +6,14 @@ const ccmapi = config.autogenURL;
 
 var _request = (api_name, payload) => {
     let request_payload = { api_name: api_name, payload: payload }
-    // console.log("request payload:", JSON.stringify(request_payload));
     return new Promise(function(resolve){
         superagent.post(ccmapi+'/ccm_api/')
             .type('json')
             .send(request_payload)
             .end((err, res) => {
-                // console.log(res.text);
                 if (err) {
-                    // console.log(err);
-                    console.log("failed at sending request to AG");
-                    console.log("request payload:", JSON.stringify(request_payload));
-                    // console.log("failed response: ",res.text);
                     resolve({ status: res.status, response:  JSON.parse(res.text) });
                 }else{
-                    console.log("success at sending request to AG");
-                    console.log("request payload:", JSON.stringify(request_payload));
                     resolve({ status: res.status, response:  JSON.parse(res.text) });
                 }
             });
@@ -92,9 +84,7 @@ var delete_dm = (dm, api_name='devicemodel.delete') => {
 
 var create_project = async (p_name, api_name='project.create') => {
     payload ={ p_name: p_name };
-    console.log("payload", payload);
     res = await _request(api_name, payload);
-    console.log("response ",res.response);
     return Promise.resolve({ status: res.status, p_id: res.response });
 }
 
@@ -140,10 +130,8 @@ var off_project = (p_name, api_name='project.off') => {
 
 var create_do = async (p_id, dm_name, df, api_name='deviceobject.create') => {
     payload = { p_id: p_id, dm_name: dm_name, dfs: df }; // df should be a list
-    console.log("do payload = ", payload);
     res = await _request(api_name, payload); // return do_id
     
-    console.log("create do result:",res);
     return Promise.resolve({ status: res.status, do_id: res.response });
 }
 
@@ -155,10 +143,8 @@ var get_do = async (p_id, do_id, api_name='deviceobject.get') => {
 
 var create_na = async (p_id, joins, api_name='networkapplication.create') => {
     payload = { p_id: p_id, joins: joins };
-    console.log("create na payload: ",payload);
 
     res = await _request(api_name, payload);
-    console.log("response = ",res);
     return Promise.resolve({ status: res.status, na_id: res.response });
 }
 
@@ -171,15 +157,8 @@ var get_na = async (p_id, na_id, api_name='networkapplication.get') => {
 
 var custom_update_na = async(p_id, na_id, na_name, api_name='networkapplication.update') => {
     get_na(p_id, na_id).then(async function(res){
-        // console.log("res id info:");
-        console.log(`p_id = ${p_id}, na_id = ${na_id}`);
-        // console.log("res na info:");
-        // console.log(res.na_info);
-        // console.log("response: na info = ",res.na_info);
         // payload = gen_payload(na_id, na_name, p_id, res.na_info);
-        // console.log("genpayload success")
         // res = await _request(api_name, payload);
-        // console.log("update na result: " ,res);
         return Promise.resolve({ status: 200 , na_id: na_id});
     });
 }
@@ -213,9 +192,6 @@ function gen_payload(na_id, na_name, p_id, na_info){
         dfm_list: []
     }
     // na_info = JSON.parse(na_info);
-    // console.log("gen payload info:");
-    // console.log("na_info = ", na_info);
-    // console.log("input = ",na_info.result.input);
     na_info.result.input.forEach((item, i) =>{
         dfm = {
             "dfo_id": item.dfo_id,
@@ -231,8 +207,6 @@ function gen_payload(na_id, na_name, p_id, na_info){
         }
         payload.dfm_list.push(dfm);
     });
-    // console.log("dfm_list[1] = ",payload.dfm_list[1].dfmp_list[0]);
-    // console.log("dfm_list[2] = ",payload.dfm_list[2].dfmp_list[0]);
     // payload.dfm_list[1].dfmp_list[0].fn_id = 10;
     // payload.dfm_list[2].dfmp_list[0].fn_id = 11;
     return payload;

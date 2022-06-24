@@ -2,7 +2,6 @@ const deviceURL = "https://" + window.location.hostname + "/service/project";
 const csmURL = "https://<iottalk address>";
 
 $(function() {
-    // console.log("enter main.js");
     var connStatus = false;
 
     // Keep screen active
@@ -146,7 +145,6 @@ $(function() {
     }, 1000);
 
     function bind_device(p_id, do_id, d_id){
-        console.log("bind url =",deviceURL + "/bind_device")
         $.ajax({
             type: 'POST',
             url: deviceURL + "/bind_device",
@@ -191,9 +189,6 @@ $(function() {
     const do_id = parseInt(url.searchParams.get("do_id"));
     const d_id = _uuid();
 
-    console.log('pid = ', p_id);
-    console.log('do_id = ', do_id);
-
     function on_data(odf, data) {
         // receive data from IoTtalk
     }
@@ -228,9 +223,7 @@ $(function() {
     var ida = {
         'ida_init': ida_init,
     };
-    // console.log("ready to register");
     dai(profile,d_id,ida,init_callback);
-    // console.log("end of register");
 
     // bind_device(p_id,do_id,d_id);
 

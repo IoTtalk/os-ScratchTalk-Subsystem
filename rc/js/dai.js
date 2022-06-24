@@ -8,21 +8,17 @@ const dai = function (profile, mac_addr, ida, callback) {
     if (profile.odf_list == undefined) profile.odf_list = [];	
 
     profile['df_list']=[];
-    console.log(profile);
     for (var i = 0; i < profile.odf_list.length; i++) {
         odf_name = profile.odf_list[i];
-        // console.log(odf_name);
         if(odf_name[odf_name.length-2] == '_'){
             odf_name = odf_name.substr(0, odf_name.length-2) + '-' + odf_name.substr(odf_name.length-1);
         }
-        console.log(odf_name);
         odf_func[odf_name] = profile.odf_list[i];
 		profile.odf_list[i] = odf_name;
 		profile['df_list'].push(odf_name);
     }
 	
     for (var i = 0; i < profile.idf_list.length; i++) {
-        console.log(profile.idf_list[i]);
         idf_name = profile.idf_list[i];
         if(idf_name[idf_name.length-2] == '_'){
             idf_name = idf_name.substr(0, idf_name.length-2) + '-' + idf_name.substr(idf_name.length-1);
@@ -33,7 +29,6 @@ const dai = function (profile, mac_addr, ida, callback) {
     }
 	
     function push(idf_name) {
-        console.log("pushing data...");
 	    data = idf_func[idf_name]();
 	    if (data!=undefined) dan.push(idf_name, data);
 	}
@@ -59,9 +54,7 @@ const dai = function (profile, mac_addr, ida, callback) {
     }
 
     function init_callback (result) {
-        console.log('register:', result);
         document.title = profile.d_name;
-        console.log('registered profile:', profile);
         ida.ida_init();
     }
 
