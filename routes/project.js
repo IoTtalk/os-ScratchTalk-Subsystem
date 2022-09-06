@@ -116,7 +116,8 @@ router.post('/bind_device', bindDevice = async (req, res) => {
         bindingInfo.do_id = parseInt(bindingInfo.do_id);
 
         let my_result = await ccmapi.get_device(bindingInfo.p_id, bindingInfo.do_id);
-        bindingInfo.d_id = my_result.response.result[0].d_id;
+        if(my_result.response.result.length !== 0)
+            bindingInfo.d_id = my_result.response.result[0].d_id;
     try {
         var result = (await ccmapi.bind_device(bindingInfo.p_id, bindingInfo.do_id, bindingInfo.d_id)).res;
     } catch (err) {
