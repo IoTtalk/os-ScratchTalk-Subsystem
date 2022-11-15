@@ -4,7 +4,7 @@ var config = require('../config');
 var logger = require('../utils/logger')("DB");
 
 // mysql
-const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
+/*const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
     host: config.dbHost,
     port: 3306,
     dialect: 'mysql',
@@ -15,22 +15,21 @@ const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
     },
     charset: 'utf8',
     logging: false
-});
+});*/
 
-// sqlite
-// const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
-//     host: config.dbHost,
-//     port: 3306,
-//     dialect: 'sqlite',
-//     pool: {
-//         max: 5,
-//         min: 0,
-//         idle: 30000
-//     },
-//     storage: './scratchtalk.sqlite',
-//     charset: 'utf8',
-//     logging: false
-// });
+//sqlite
+const sequelize = new Sequelize(config.db, config.dbUser, config.dbPassword, {
+     host: 'localhost',
+     dialect: 'sqlite',
+     pool: {
+         max: 5,
+         min: 0,
+         idle: 30000
+     },
+     storage: './scratchtalk.sqlite',
+     charset: 'utf8',
+     logging: false
+});
 
 const db = {
     User: require('./models/user')(sequelize),
@@ -41,14 +40,16 @@ const db = {
 
 var init = async () => {
     // create db if it doesn't already exist (for mysql only)
-    const connection = await mysql.createConnection({
-        host: config.dbHost,
-        user: config.dbUser,
-        password: config.dbPassword
-    });
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${config.db}\`;`);
-    logger.warn("Database does not exist, create one: %s", config.db);
-
+    if(sequelize.dialect==='mysql'){
+        const connection = await mysql.createConnection({
+            host: config.dbHost,
+            user: config.dbUser,
+            password: config.dbPassword
+        });
+        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${config.db}\`;`);
+        logger.warn("Database does not exist, create one: %s", config.db);
+    }
+    
     // start db
     sequelize.authenticate()
         .then(function(err) {

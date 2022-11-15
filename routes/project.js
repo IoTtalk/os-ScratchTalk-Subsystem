@@ -10,6 +10,7 @@ router.post('/create', createProject = async (req, res) => {
         return res.status(404).send({ res: 'User has not logged in.' })
     }
     var projectConfig = req.fields;
+    console.log("project config = ",projectConfig);
     var userAccessTokenId = req.session.accessTokenId;
     var iottalkProjectInfo = { 
         p_id: null,
@@ -27,7 +28,9 @@ router.post('/create', createProject = async (req, res) => {
         // create IDOs
         if(projectConfig.idos) {
             for(var ido of projectConfig.idos) {
-                let my_do_id = (await ccmapi.create_do(iottalkProjectInfo.p_id, ido.dm, ido.idfs)).do_id;
+                let r=(await ccmapi.create_do(iottalkProjectInfo.p_id, ido.dm, ido.idfs));
+                console.log(r);
+                let my_do_id = r.do_id;
                 iottalkProjectInfo.ido_id.push(parseInt(my_do_id.result));
             }
         }
@@ -35,7 +38,9 @@ router.post('/create', createProject = async (req, res) => {
         // create ODOs
         if(projectConfig.odos) {         
             for(var odo of projectConfig.odos) {
-                let my_do_id = (await ccmapi.create_do(iottalkProjectInfo.p_id, odo.dm, odo.odfs)).do_id;
+                let r=(await ccmapi.create_do(iottalkProjectInfo.p_id, odo.dm, odo.odfs));
+                console.log(r);
+                let my_do_id = r.do_id;
                 iottalkProjectInfo.odo_id.push(parseInt(my_do_id.result));
             }
         }
@@ -55,7 +60,9 @@ router.post('/create', createProject = async (req, res) => {
                         joinEndPoint.push([iottalkProjectInfo.odo_id[join.odo], odf])
                     });
                 }
-                let my_na_id = (await ccmapi.create_na(iottalkProjectInfo.p_id, joinEndPoint)).na_id;
+                let r=(await ccmapi.create_na(iottalkProjectInfo.p_id, joinEndPoint));
+                console.log(r);
+                let my_na_id = r.na_id;
                 iottalkProjectInfo.na_id.push(parseInt(my_na_id.result));
             }
         }
@@ -85,7 +92,7 @@ router.post('/create', createProject = async (req, res) => {
         logger.error(error.message)
         return res.status(404).send({ res: 'Create IoTtalk project failed.' });
     }
-    
+    console.log(iottalkProjectInfo);
     return res.json(iottalkProjectInfo);
 });
 
@@ -116,8 +123,11 @@ router.post('/bind_device', bindDevice = async (req, res) => {
         bindingInfo.do_id = parseInt(bindingInfo.do_id);
 
         let my_result = await ccmapi.get_device(bindingInfo.p_id, bindingInfo.do_id);
-        bindingInfo.d_id = my_result.response.result[0].d_id;
+        console.log(my_result.response);
+	bindingInfo.d_id = my_result.response.result.find((d)=>d.mac_addr==bindingInfo.d_id).d_id;
     try {
+        console.log(bindingInfo);
+        console.log(bindingInfo.d_id);
         var result = (await ccmapi.bind_device(bindingInfo.p_id, bindingInfo.do_id, bindingInfo.d_id)).res;
     } catch (err) {
         logger.error(err.message)
